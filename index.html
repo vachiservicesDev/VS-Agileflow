@@ -7,9 +7,22 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>VachiCollab - Real-Time Agile Collaboration Platform</title>
     <title>FreeAgilePoker - Real-Time Agile Collaboration Platform</title>
     <meta name="description" content="Spin up ephemeral rooms for agile ceremonies. No sign-ups, no data persistence—real-time sync. Data vanishes when the session ends." />
+    <script>
+      (function() {
+        var d = window.customElements && window.customElements.define;
+        if (d) {
+          var g = window.customElements.get.bind(window.customElements);
+          window.customElements.define = function(name, ctor, opts) {
+            if (!g(name)) {
+              return d.call(window.customElements, name, ctor, opts);
+            }
+            console.warn("Custom element '" + name + "' already defined, skipping");
+          };
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

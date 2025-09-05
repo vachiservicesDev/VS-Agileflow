@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import Index from './pages/Index'
+import Header from './components/Header'
 import CreateRoom from './pages/CreateRoom'
 import JoinRoom from './pages/JoinRoom'
 import RetroBoard from './pages/RetroBoard'
@@ -10,6 +11,7 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <Header />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/create-room/:type/:roomId" element={<CreateRoom />} />

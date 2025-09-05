@@ -20,7 +20,7 @@ export default defineConfig({
     include: ['react', 'react-dom', 'react-router-dom']
   },
   build: {
-    outDir: 'build/v4',
+    outDir: 'dist',
     // Improve build reliability
     sourcemap: true,
     rollupOptions: {
