@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'sonner'
 import Index from './pages/Index'
 import Header from './components/Header'
+import Footer from './components/Footer'
 import CreateRoom from './pages/CreateRoom'
 import JoinRoom from './pages/JoinRoom'
 import RetroBoard from './pages/RetroBoard'
@@ -21,6 +22,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster />
+        <Footer />
       </div>
     </Router>
   )
