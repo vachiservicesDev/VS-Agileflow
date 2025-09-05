@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading…</title>
+    <style>
+      html,body { height:100%; margin:0 }
+      .center { display:flex; align-items:center; justify-content:center; height:100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#374151 }
+    </style>
+    <script>
+      (function() {
+        var originalPath = location.pathname + location.search + location.hash;
+        // Try to load SPA index at current origin, then restore the deep link path so the router can handle it
+        fetch('/index.html', { cache: 'no-cache' })
+          .then(function(res) { return res.text(); })
+          .then(function(html) {
+            document.open();
+            document.write(html);
+            document.close();
+            try { history.replaceState(null, '', originalPath); } catch (e) { location.replace('/'); }
+          })
+          .catch(function() {
+            // As a last resort, go to root
+            location.replace('/');
+          });
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="center">Loading…</div>
+  </body>
+  </html>
+

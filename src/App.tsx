@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import Index from './pages/Index'
 import Header from './components/Header'
@@ -18,6 +18,7 @@ function App() {
           <Route path="/join-room/:roomId" element={<JoinRoom />} />
           <Route path="/room/retro-board/:roomId" element={<RetroBoard />} />
           <Route path="/room/planning-poker/:roomId" element={<PlanningPoker />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster />
       </div>
