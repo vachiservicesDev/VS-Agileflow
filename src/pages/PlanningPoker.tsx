@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Eye, EyeOff, RotateCcw, RefreshCw, Check, Clock } from 'lucide-react';
+import { ArrowLeft, Users, Eye, EyeOff, RefreshCw, Check, Clock } from 'lucide-react';
 import { RoomState, Participant } from '@/types/room';
 import { toast } from 'sonner';
 
@@ -18,7 +17,6 @@ export default function PlanningPoker() {
   
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [participant, setParticipant] = useState<Participant | null>(null);
-  const [currentStory, setCurrentStory] = useState('');
   const [selectedVote, setSelectedVote] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
 
@@ -40,10 +38,7 @@ export default function PlanningPoker() {
         setParticipant(currentParticipant);
       }
       
-      // Set current story if exists
-      if (roomData.currentStory) {
-        setCurrentStory(roomData.currentStory);
-      }
+      // Minimalist: no story context
     }
   }, [participantName, roomId, navigate]);
 
@@ -123,31 +118,8 @@ export default function PlanningPoker() {
     toast.success('Votes reset!');
   };
 
-  const handleNewRound = () => {
-    if (!participant?.isHost) return;
-    
-    setSelectedVote(null);
-    setHasVoted(false);
-    
-    updateRoomState(prev => ({
-      ...prev,
-      votes: {},
-      votesRevealed: false,
-      currentStory: ''
-    }));
+  // Minimalist: no explicit new round button; Reset covers the flow
 
-    setCurrentStory('');
-    toast.success('New round started!');
-  };
-
-  const handleSetStory = () => {
-    if (!participant?.isHost || !currentStory.trim()) return;
-    
-    updateRoomState(prev => ({
-      ...prev,
-      currentStory: currentStory.trim()
-    }));
-  };
 
   const getVoteStats = () => {
     if (!roomState?.votes || !roomState.votesRevealed) return null;
@@ -219,12 +191,12 @@ export default function PlanningPoker() {
           {/* Vote Results - prominent */}
           <Card className="bg-gray-900 border-gray-800">
             <CardHeader>
-              <CardTitle className="w-full text-center">Vote Results</CardTitle>
+              <CardTitle className="w-full text-center text-2xl md:text-3xl">Vote Results</CardTitle>
             </CardHeader>
             <CardContent>
               {!roomState.votesRevealed && (
                 <div className="text-center text-gray-300">
-                  <p className="text-lg">Waiting for votes…</p>
+                  <p className="text-xl md:text-2xl font-semibold">Waiting for votes…</p>
                   <p className="text-sm mt-1 text-gray-400">{votedParticipants}/{totalParticipants} voted</p>
                 </div>
               )}
@@ -265,33 +237,7 @@ export default function PlanningPoker() {
               )}
             </CardContent>
           </Card>
-
-          {/* Current Story with Set Story control */}
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-center">Current Story</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {participant.isHost ? (
-                <div className="flex flex-col md:flex-row md:items-center md:space-x-3 space-y-3 md:space-y-0">
-                  <Input
-                    placeholder="Enter the user story to estimate…"
-                    value={currentStory}
-                    onChange={(e) => setCurrentStory(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSetStory()}
-                    className="bg-gray-800 border-gray-700 text-gray-100 placeholder:text-gray-500"
-                  />
-                  <Button onClick={handleSetStory} disabled={!currentStory.trim()} className="bg-green-600 hover:bg-green-500">
-                    Set Story
-                  </Button>
-                </div>
-              ) : (
-                <div className="p-4 rounded-lg bg-gray-800">
-                  <p className="font-medium text-gray-100">{roomState.currentStory || 'No story set yet'}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          
         </div>
       </section>
 
@@ -373,7 +319,7 @@ export default function PlanningPoker() {
                     <Button
                       key={card}
                       variant={selectedVote === card ? 'default' : 'outline'}
-                      className={`aspect-[3/4] text-lg font-bold ${selectedVote === card ? 'ring-2 ring-green-500' : ''}`}
+                      className={`aspect-[3/4] text-lg font-bold transition-colors ${selectedVote === card ? 'bg-green-600 hover:bg-green-500 text-white border-transparent' : 'bg-transparent text-gray-100 border border-gray-700 hover:border-gray-500'}`}
                       onClick={() => handleVote(card)}
                       disabled={roomState.votesRevealed}
                     >
@@ -407,12 +353,6 @@ export default function PlanningPoker() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reset Votes
               </Button>
-              {roomState.votesRevealed && (
-                <Button onClick={handleNewRound} size="lg" className="bg-green-600 hover:bg-green-500">
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  New Round
-                </Button>
-              )}
             </div>
           </div>
         </div>
