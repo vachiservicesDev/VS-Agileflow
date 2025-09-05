@@ -30,14 +30,14 @@ export default function Index() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Zap className="h-8 w-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">AgileFlow</h1>
+              <h1 className="text-2xl font-bold text-gray-900">VachiCollab</h1>
             </div>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
                 <Shield className="h-4 w-4" />
                 <span>No Registration</span>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
                 <Globe className="h-4 w-4" />
                 <span>Ephemeral Sessions</span>
               </div>
@@ -56,19 +56,28 @@ export default function Index() {
             Create instant collaboration rooms for your team. No sign-ups, no data storage, 
             just pure real-time agile tools that disappear when you're done.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
-            <span className="flex items-center">
-              <Shield className="h-4 w-4 mr-1" />
-              Privacy by Design
-            </span>
-            <span className="flex items-center">
-              <Zap className="h-4 w-4 mr-1" />
-              Instant Setup
-            </span>
-            <span className="flex items-center">
-              <Users className="h-4 w-4 mr-1" />
-              Real-time Sync
-            </span>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="p-4 bg-green-100 rounded-full w-fit mx-auto mb-4">
+                <Shield className="h-8 w-8 text-green-600" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Privacy by Design</h4>
+              <p className="text-gray-600">No data storage, no tracking. Your session data disappears when you close the room.</p>
+            </div>
+            <div className="text-center">
+              <div className="p-4 bg-blue-100 rounded-full w-fit mx-auto mb-4">
+                <Zap className="h-8 w-8 text-blue-600" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Instant Setup</h4>
+              <p className="text-gray-600">Create rooms in seconds. No accounts, no setup time, just click and collaborate.</p>
+            </div>
+            <div className="text-center">
+              <div className="p-4 bg-purple-100 rounded-full w-fit mx-auto mb-4">
+                <Users className="h-8 w-8 text-purple-600" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Real-time Sync</h4>
+              <p className="text-gray-600">See changes instantly. Every vote, note, and action syncs across all participants.</p>
+            </div>
           </div>
         </div>
 
@@ -120,7 +129,6 @@ export default function Index() {
               <Button 
                 onClick={() => createRoom('retro-board')} 
                 className="w-full"
-                variant="outline"
               >
                 Create Retro Board Room
               </Button>
@@ -154,42 +162,6 @@ export default function Index() {
               </Button>
             </CardContent>
           </Card>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12">Why Choose AgileFlow?</h3>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="p-3 bg-blue-100 rounded-full w-fit mx-auto mb-4">
-                <Zap className="h-8 w-8 text-blue-600" />
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Instant Setup</h4>
-              <p className="text-gray-600">
-                Create rooms in seconds. No accounts, no setup time, just click and collaborate.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="p-3 bg-green-100 rounded-full w-fit mx-auto mb-4">
-                <Shield className="h-8 w-8 text-green-600" />
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Privacy First</h4>
-              <p className="text-gray-600">
-                No data storage, no tracking. Your session data disappears when you close the room.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="p-3 bg-purple-100 rounded-full w-fit mx-auto mb-4">
-                <Users className="h-8 w-8 text-purple-600" />
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Real-Time Sync</h4>
-              <p className="text-gray-600">
-                See changes instantly. Every vote, note, and action syncs across all participants.
-              </p>
-            </div>
-          </div>
         </div>
       </section>
     </div>
