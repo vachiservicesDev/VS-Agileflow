@@ -9,7 +9,7 @@ export default function Header() {
             <img
               src="/logo-concept-1-card-agile.svg"
               alt="FreeAgilePoker"
-              className="h-8 md:h-[4.5rem] w-auto"
+              className="h-10 md:h-[4.5rem] max-h-16 md:max-h-[4.5rem] w-auto"
               loading="eager"
               decoding="async"
             />
