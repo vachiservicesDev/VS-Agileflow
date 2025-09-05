@@ -13,7 +13,7 @@ export default function CreateRoom() {
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
 
-  const roomUrl = `${window.location.origin}/join-room/${roomId}`;
+  const roomUrl = `${window.location.origin}/join-room/${type}/${roomId}`;
 
   const handleCreateRoom = async () => {
     if (!hostName.trim()) {
