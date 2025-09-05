@@ -9,7 +9,27 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    // Ensure proper MIME types for TypeScript files
+    fs: {
+      strict: false
+    }
+  },
+  optimizeDeps: {
+    // Force pre-bundling of these dependencies to avoid issues
+    include: ['react', 'react-dom', 'react-router-dom']
+  },
   build: {
     outDir: 'build/v4',
+    // Improve build reliability
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom']
+        }
+      }
+    }
   },
 })
