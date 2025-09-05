@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Vote, StickyNote, Zap, Shield, Globe } from 'lucide-react';
+import { Users, Vote, StickyNote, Zap, Shield } from 'lucide-react';
 import { generateRoomId } from '@/lib/websocket';
 
 export default function Index() {
