@@ -44,3 +44,66 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Print styles */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Ensure grid prints cleanly */
+  #retro-board-content.retro-board-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    overflow: visible !important;
+  }
+
+  .retro-column-header {
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .retro-note {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
+    -webkit-page-break-inside: avoid !important;
+    overflow: visible !important;
+  }
+
+  /* Remove decorative backgrounds and shadows */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    background-image: none !important;
+  }
+
+  .bg-green-100,
+  .bg-yellow-100,
+  .bg-blue-100,
+  .bg-purple-50,
+  .bg-yellow-50,
+  .bg-green-50,
+  .bg-blue-50 {
+    background-color: #ffffff !important;
+  }
+
+  .text-green-600,
+  .text-yellow-600,
+  .text-blue-600,
+  .text-purple-600,
+  .text-gray-600,
+  .text-gray-400 {
+    color: #000000 !important;
+  }
+}

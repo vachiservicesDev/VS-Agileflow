@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Plus, X } from 'lucide-react';
+import { ArrowLeft, Users, Plus, X, MoreVertical, Printer, Image as ImageIcon, FileDown } from 'lucide-react';
 import { RoomState, Participant, StickyNote } from '@/types/room';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 
 export default function RetroBoard() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -18,6 +19,9 @@ export default function RetroBoard() {
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
   const [selectedColumn, setSelectedColumn] = useState<string>('1');
+  const [isActionsOpen, setIsActionsOpen] = useState<boolean>(false);
+  const actionsRef = useRef<HTMLDivElement | null>(null);
+  const boardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!participantName || !roomId) {
@@ -49,6 +53,17 @@ export default function RetroBoard() {
       console.error('No room found in localStorage for roomId:', roomId);
     }
   }, [participantName, roomId, isHost, navigate]);
+
+  // Close actions menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) {
+        setIsActionsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const updateRoomState = (updater: (prev: RoomState) => RoomState) => {
     setRoomState(prev => {
@@ -118,6 +133,59 @@ export default function RetroBoard() {
     return roomState?.notes?.filter(note => note.columnId === columnId) || [];
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPNG = async () => {
+    try {
+      const node = boardRef.current;
+      if (!node) return;
+      const canvas = await html2canvas(node, {
+        backgroundColor: '#FFFFFF',
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().slice(0,19).replace(/[.:T]/g, '-');
+      link.href = dataUrl;
+      link.download = `retro-board-${roomId}-${timestamp}.png`;
+      link.click();
+    } catch (err) {
+      console.error('Failed to download PNG', err);
+      toast.error('Failed to download image');
+    }
+  };
+
+  const handleDownloadCSV = () => {
+    try {
+      const rows: string[][] = [];
+      rows.push(['Category', 'Note']);
+      const columnsById = new Map<string, string>((roomState?.columns || []).map(c => [c.id, c.title]));
+      for (const note of roomState?.notes || []) {
+        const category = columnsById.get(note.columnId) || '';
+        const text = (note.text || note.content || '').replace(/\r?\n/g, ' ').trim();
+        rows.push([category, text]);
+      }
+      const csv = rows
+        .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+        .join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().slice(0,19).replace(/[.:T]/g, '-');
+      link.href = url;
+      link.download = `retro-board-${roomId}-${timestamp}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download CSV', err);
+      toast.error('Failed to download CSV');
+    }
+  };
+
   if (!roomState || !participant) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -132,7 +200,7 @@ export default function RetroBoard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
+      <header className="border-b bg-white/80 backdrop-blur-sm print-hidden">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -156,6 +224,40 @@ export default function RetroBoard() {
               {participant.isHost && (
                 <Badge variant="secondary">Host</Badge>
               )}
+              {/* Actions Menu */}
+              <div className="relative" ref={actionsRef}>
+                <Button variant="outline" onClick={() => setIsActionsOpen(v => !v)}>
+                  <MoreVertical className="h-4 w-4 mr-2" />
+                  Actions
+                </Button>
+                {isActionsOpen && (
+                  <div className="absolute right-0 mt-2 w-60 rounded-md border bg-white shadow-lg z-50">
+                    <div className="py-1">
+                      <button
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-gray-50"
+                        onClick={() => { setIsActionsOpen(false); handlePrint(); }}
+                      >
+                        <Printer className="h-4 w-4 mr-2" />
+                        Print Board
+                      </button>
+                      <button
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-gray-50"
+                        onClick={() => { setIsActionsOpen(false); handleDownloadPNG(); }}
+                      >
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        Download as Image (PNG)
+                      </button>
+                      <button
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-gray-50"
+                        onClick={() => { setIsActionsOpen(false); handleDownloadCSV(); }}
+                      >
+                        <FileDown className="h-4 w-4 mr-2" />
+                        Download as CSV
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -164,7 +266,7 @@ export default function RetroBoard() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Participants */}
-          <Card>
+          <Card className="print-hidden">
             <CardHeader>
               <CardTitle>Team Members</CardTitle>
             </CardHeader>
@@ -189,7 +291,7 @@ export default function RetroBoard() {
           </Card>
 
           {/* Add Note */}
-          <Card>
+          <Card className="print-hidden">
             <CardHeader>
               <CardTitle>Add New Note</CardTitle>
             </CardHeader>
@@ -234,17 +336,17 @@ export default function RetroBoard() {
           </Card>
 
           {/* Retro Columns */}
-          <div className="grid md:grid-cols-3 gap-6">
+          <div ref={boardRef} id="retro-board-content" className="grid md:grid-cols-3 gap-6 retro-board-grid">
             {roomState.columns?.map((column) => (
               <Card key={column.id} className="h-fit">
-                <CardHeader className={`${column.color} rounded-t-lg`}>
+                <CardHeader className={`${column.color} rounded-t-lg retro-column-header`}>
                   <CardTitle className="text-center">{column.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3 min-h-[400px]">
                   {getNotesForColumn(column.id).map((note) => (
                     <div
                       key={note.id}
-                      className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 group hover:shadow-md transition-shadow"
+                      className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 group hover:shadow-md transition-shadow retro-note"
                     >
                       <div className="flex items-start justify-between">
                         <p className="text-sm flex-1 mb-2">{note.text}</p>
@@ -253,7 +355,7 @@ export default function RetroBoard() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteNote(note.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6 print-hidden"
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -277,7 +379,7 @@ export default function RetroBoard() {
           </div>
 
           {/* Stats */}
-          <Card>
+          <Card className="print-hidden">
             <CardHeader>
               <CardTitle>Session Stats</CardTitle>
             </CardHeader>
