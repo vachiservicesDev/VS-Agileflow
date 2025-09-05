@@ -244,13 +244,13 @@ export default function PlanningPoker() {
       <section className="container mx-auto px-4 py-6 flex-1 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Participants */}
-          <div className="lg:col-span-3">
-            <Card className="bg-white border border-gray-200 h-full">
-              <CardHeader>
+          <div className="lg:col-span-4 xl:col-span-5">
+            <Card className="bg-white border border-gray-200 h-full max-h-[70vh] flex flex-col">
+              <CardHeader className="pb-4">
                 <CardTitle className="text-gray-900">Participants</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
+              <CardContent className="flex-1 overflow-auto">
+                <div className="space-y-3 pr-1">
                   {roomState.participants.map((p) => {
                     const vote = roomState.votes?.[p.id];
                     const hasParticipantVoted = !!vote;
@@ -292,12 +292,12 @@ export default function PlanningPoker() {
           </div>
 
           {/* Spacer / optional center content */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-2 xl:col-span-2">
             {/* Intentionally left for breathing room and scalability */}
           </div>
 
           {/* Right: Estimate cards */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-6 xl:col-span-5">
             <Card className="bg-white border border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-gray-900">
