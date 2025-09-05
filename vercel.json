@@ -3,13 +3,13 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/", "destination": "/build/v4/index.html" },
-    { "source": "/assets/(.*)", "destination": "/build/v4/assets/$1" },
-    { "source": "/(.*)", "destination": "/build/v4/index.html" }
+    { "source": "/", "destination": "/dist/index.html" },
+    { "source": "/assets/(.*)", "destination": "/dist/assets/$1" },
+    { "source": "/(.*)", "destination": "/dist/index.html" }
   ],
   "headers": [
     {
-      "source": "/build/v4/assets/(.*\\.js)",
+      "source": "/dist/assets/(.*\\.js)",
       "headers": [
         {
           "key": "Content-Type",
