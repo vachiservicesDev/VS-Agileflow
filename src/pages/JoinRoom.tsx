@@ -8,9 +8,10 @@ import { ArrowLeft, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function JoinRoom() {
-  const { roomId } = useParams<{ roomId: string }>();
+  const { type, roomId } = useParams<{ type?: 'planning-poker' | 'retro-board'; roomId: string }>();
   const [participantName, setParticipantName] = useState('');
   const [isJoining, setIsJoining] = useState(false);
+  const [selectedType, setSelectedType] = useState<'planning-poker' | 'retro-board' | null>(type || null);
   const navigate = useNavigate();
 
   const handleJoinRoom = async () => {
@@ -29,18 +30,68 @@ export default function JoinRoom() {
     try {
       // Check if room exists in localStorage
       const storedRoom = localStorage.getItem(`room-${roomId}`);
-      
+
       if (!storedRoom) {
-        toast.error('Room not found. Please check the room code.');
-        setIsJoining(false);
+        // If no local room exists (e.g., different device), initialize a local room if we know the type
+        const effectiveType = (selectedType || type);
+        if (!effectiveType) {
+          toast.error('Room not found on this device. Please select the room type below.');
+          setIsJoining(false);
+          return;
+        }
+
+        const participantId = crypto.randomUUID();
+        const newParticipant = {
+          id: participantId,
+          name: participantName.trim(),
+          isHost: false
+        };
+
+        const initialRoomState = {
+          id: roomId,
+          type: effectiveType,
+          participants: [newParticipant],
+          host: 'unknown',
+          createdAt: new Date(),
+          votes: {},
+          votesRevealed: false,
+          columns: effectiveType === 'retro-board' ? [
+            { id: '1', title: 'What Went Well', color: 'bg-green-100' },
+            { id: '2', title: 'What to Improve', color: 'bg-yellow-100' },
+            { id: '3', title: 'Action Items', color: 'bg-blue-100' }
+          ] : undefined,
+          notes: []
+        };
+
+        localStorage.setItem(`room-${roomId}`, JSON.stringify(initialRoomState));
+
+        navigate(`/room/${effectiveType}/${roomId}`, {
+          state: { participantName: participantName.trim(), isHost: false }
+        });
         return;
       }
 
       const roomData = JSON.parse(storedRoom);
-      
+
+      // Add participant locally if not already present
+      const nameExists = roomData.participants?.some((p: { name: string }) => p.name === participantName.trim());
+      if (!nameExists) {
+        const participantId = crypto.randomUUID();
+        const newParticipant = {
+          id: participantId,
+          name: participantName.trim(),
+          isHost: false
+        };
+        const updatedRoom = {
+          ...roomData,
+          participants: [...(roomData.participants || []), newParticipant]
+        };
+        localStorage.setItem(`room-${roomId}`, JSON.stringify(updatedRoom));
+      }
+
       // Navigate to the appropriate room type
-      navigate(`/room/${roomData.type}/${roomId}`, { 
-        state: { participantName: participantName.trim(), isHost: false } 
+      navigate(`/room/${roomData.type}/${roomId}`, {
+        state: { participantName: participantName.trim(), isHost: false }
       });
     } catch (error) {
       console.error('Failed to join room:', error);
@@ -69,6 +120,27 @@ export default function JoinRoom() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {!type && (
+              <div className="space-y-2">
+                <Label className="text-sm">Select room type</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant={selectedType === 'planning-poker' ? 'default' : 'outline'}
+                    onClick={() => setSelectedType('planning-poker')}
+                  >
+                    Planning Poker
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={selectedType === 'retro-board' ? 'default' : 'outline'}
+                    onClick={() => setSelectedType('retro-board')}
+                  >
+                    Retro Board
+                  </Button>
+                </div>
+              </div>
+            )}
             <div>
               <Label htmlFor="participantName">Your Name</Label>
               <Input
@@ -83,7 +155,7 @@ export default function JoinRoom() {
 
             <Button 
               onClick={handleJoinRoom} 
-              disabled={!participantName.trim() || isJoining}
+              disabled={!participantName.trim() || isJoining || (!type && !selectedType)}
               className="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 active:scale-95 text-white transition-all duration-150 shadow-md hover:shadow-lg"
             >
               {isJoining ? 'Joining Room...' : 'Join Room'}

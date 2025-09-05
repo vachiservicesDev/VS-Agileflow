@@ -29,24 +29,48 @@ export default function RetroBoard() {
     const storedRoom = localStorage.getItem(`room-${roomId}`);
     if (storedRoom) {
       const roomData: RoomState = JSON.parse(storedRoom);
-      setRoomState(roomData);
-      
-      // Find current participant
-      const currentParticipant = roomData.participants.find(p => p.name === participantName);
-      if (currentParticipant) {
-        setParticipant(currentParticipant);
+      // Ensure participant exists locally
+      let currentParticipant = roomData.participants.find(p => p.name === participantName);
+      if (!currentParticipant) {
+        currentParticipant = {
+          id: crypto.randomUUID(),
+          name: participantName,
+          isHost: !!isHost
+        } as Participant;
+        const updatedRoom = {
+          ...roomData,
+          participants: [...roomData.participants, currentParticipant]
+        } as RoomState;
+        localStorage.setItem(`room-${roomId}`, JSON.stringify(updatedRoom));
+        setRoomState(updatedRoom);
       } else {
-        // If participant not found and this is a host, they might be rejoining
-        // Find by isHost flag instead
-        const hostParticipant = roomData.participants.find(p => p.isHost);
-        if (hostParticipant && isHost) {
-          setParticipant(hostParticipant);
-        } else {
-          console.error('Participant not found in room:', { participantName, participants: roomData.participants });
-        }
+        setRoomState(roomData);
       }
+
+      setParticipant(currentParticipant);
     } else {
-      console.error('No room found in localStorage for roomId:', roomId);
+      // If room is missing locally, create a minimal shell
+      const currentParticipant: Participant = {
+        id: crypto.randomUUID(),
+        name: participantName,
+        isHost: !!isHost
+      };
+      const initialRoomState: RoomState = {
+        id: roomId,
+        type: 'retro-board',
+        participants: [currentParticipant],
+        host: currentParticipant.id,
+        createdAt: new Date(),
+        columns: [
+          { id: '1', title: 'What Went Well', color: 'bg-green-100' },
+          { id: '2', title: 'What to Improve', color: 'bg-yellow-100' },
+          { id: '3', title: 'Action Items', color: 'bg-blue-100' }
+        ],
+        notes: []
+      } as unknown as RoomState;
+      localStorage.setItem(`room-${roomId}`, JSON.stringify(initialRoomState));
+      setRoomState(initialRoomState);
+      setParticipant(currentParticipant);
     }
   }, [participantName, roomId, isHost, navigate]);
 

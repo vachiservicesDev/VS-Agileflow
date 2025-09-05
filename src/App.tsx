@@ -13,6 +13,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/create-room/:type/:roomId" element={<CreateRoom />} />
+          <Route path="/join-room/:type/:roomId" element={<JoinRoom />} />
           <Route path="/join-room/:roomId" element={<JoinRoom />} />
           <Route path="/room/retro-board/:roomId" element={<RetroBoard />} />
           <Route path="/room/planning-poker/:roomId" element={<PlanningPoker />} />

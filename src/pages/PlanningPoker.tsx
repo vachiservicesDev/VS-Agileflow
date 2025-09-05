@@ -32,18 +32,50 @@ export default function PlanningPoker() {
     const storedRoom = localStorage.getItem(`room-${roomId}`);
     if (storedRoom) {
       const roomData: RoomState = JSON.parse(storedRoom);
-      setRoomState(roomData);
-      
-      // Find current participant
-      const currentParticipant = roomData.participants.find(p => p.name === participantName);
-      if (currentParticipant) {
-        setParticipant(currentParticipant);
+      // Ensure participant exists locally
+      let participantRecord = roomData.participants.find(p => p.name === participantName);
+      if (!participantRecord) {
+        participantRecord = {
+          id: crypto.randomUUID(),
+          name: participantName,
+          isHost: false
+        } as Participant;
+        const updatedRoom = {
+          ...roomData,
+          participants: [...roomData.participants, participantRecord]
+        } as RoomState;
+        localStorage.setItem(`room-${roomId}`, JSON.stringify(updatedRoom));
+        setRoomState(updatedRoom);
+      } else {
+        setRoomState(roomData);
       }
-      
+
+      setParticipant(participantRecord);
+
       // Set current story if exists
-      if (roomData.currentStory) {
-        setCurrentStory(roomData.currentStory);
+      const roomDataLatest: RoomState = JSON.parse(localStorage.getItem(`room-${roomId}`) || JSON.stringify(roomData));
+      if (roomDataLatest.currentStory) {
+        setCurrentStory(roomDataLatest.currentStory);
       }
+    } else {
+      // If room is missing locally, create a minimal shell so the user can proceed
+      const participantRecord: Participant = {
+        id: crypto.randomUUID(),
+        name: participantName,
+        isHost: false
+      };
+      const initialRoomState: RoomState = {
+        id: roomId,
+        type: 'planning-poker',
+        participants: [participantRecord],
+        host: 'unknown',
+        createdAt: new Date(),
+        votes: {},
+        votesRevealed: false
+      } as unknown as RoomState;
+      localStorage.setItem(`room-${roomId}`, JSON.stringify(initialRoomState));
+      setRoomState(initialRoomState);
+      setParticipant(participantRecord);
     }
   }, [participantName, roomId, navigate]);
 
