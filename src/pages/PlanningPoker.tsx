@@ -143,7 +143,7 @@ export default function PlanningPoker() {
 
   if (!roomState || !participant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading room...</p>
@@ -153,22 +153,21 @@ export default function PlanningPoker() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur">
+      <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 onClick={() => navigate('/')}
-                className="text-gray-700 hover:text-gray-900"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Leave Room
               </Button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Planning Poker</h1>
+                <h1 className="text-xl font-bold">Planning Poker</h1>
                 <p className="text-sm text-gray-500">Room: {roomId}</p>
               </div>
             </div>
@@ -189,13 +188,13 @@ export default function PlanningPoker() {
       <section className="container mx-auto px-4 pt-6">
         <div className="max-w-5xl mx-auto space-y-6">
           {/* Vote Results - prominent */}
-          <Card className="bg-white border border-gray-200">
-            <CardHeader>
-              <CardTitle className="w-full text-center text-2xl md:text-3xl text-gray-900">Vote Results</CardTitle>
+          <Card className={roomState.votesRevealed ? 'border-blue-200 shadow-md' : ''}>
+            <CardHeader className={roomState.votesRevealed ? 'bg-blue-50 rounded-t-lg' : undefined}>
+              <CardTitle className="w-full text-center text-2xl md:text-3xl">Vote Results</CardTitle>
             </CardHeader>
             <CardContent>
               {!roomState.votesRevealed && (
-                <div className="text-center text-gray-700">
+                <div className="text-center text-gray-600">
                   <p className="text-xl md:text-2xl font-semibold">Waiting for votes…</p>
                   <p className="text-sm mt-1 text-gray-500">{votedParticipants}/{totalParticipants} voted</p>
                 </div>
@@ -215,7 +214,7 @@ export default function PlanningPoker() {
                         <p className="text-xs text-gray-500 mt-1">Minimum</p>
                       </div>
                       <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                        <p className="text-2xl font-bold text-red-600">{stats.max}</p>
+                        <p className="text-2xl font-bold text-purple-600">{stats.max}</p>
                         <p className="text-xs text-gray-500 mt-1">Maximum</p>
                       </div>
                     </div>
@@ -226,7 +225,7 @@ export default function PlanningPoker() {
                     {roomState.participants.map((p) => {
                       const vote = roomState.votes?.[p.id];
                       return (
-                        <Badge key={p.id} variant="secondary" className="px-3 py-1 bg-white text-gray-900 border border-gray-300">
+                        <Badge key={p.id} variant="secondary" className="px-3 py-1 bg-white border border-gray-200 shadow-sm hover:shadow-md">
                           <span className="mr-2 text-gray-700">{p.name}</span>
                           <span className="font-semibold text-green-600">{vote?.value ?? '—'}</span>
                         </Badge>
@@ -245,9 +244,9 @@ export default function PlanningPoker() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Participants */}
           <div className="lg:col-span-4 xl:col-span-5">
-            <Card className="bg-white border border-gray-200 h-full max-h-[70vh] flex flex-col">
+            <Card className="h-full max-h-[70vh] flex flex-col">
               <CardHeader className="pb-4">
-                <CardTitle className="text-gray-900">Participants</CardTitle>
+                <CardTitle>Participants</CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-auto">
                 <div className="space-y-3 pr-1">
@@ -265,7 +264,7 @@ export default function PlanningPoker() {
                       : (hasParticipantVoted ? 'text-green-600' : 'text-gray-500');
 
                     return (
-                      <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white">
+                      <div key={p.id} className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
                             <span className="text-sm font-medium">
@@ -273,7 +272,7 @@ export default function PlanningPoker() {
                             </span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <span className="font-medium text-gray-900">{p.name}</span>
+                            <span className="font-medium">{p.name}</span>
                             {p.isHost && <Badge variant="outline" className="text-xs">Host</Badge>}
                           </div>
                         </div>
@@ -298,9 +297,9 @@ export default function PlanningPoker() {
 
           {/* Right: Estimate cards */}
           <div className="lg:col-span-6 xl:col-span-5">
-            <Card className="bg-white border border-gray-200">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-gray-900">
+                <CardTitle className="flex items-center justify-between">
                   <span>Choose Your Estimate</span>
                   {roomState.votesRevealed ? (
                     <Eye className="h-5 w-5 text-green-600" />
@@ -317,8 +316,8 @@ export default function PlanningPoker() {
                   {FIBONACCI_CARDS.map((card) => (
                     <Button
                       key={card}
-                      variant={selectedVote === card ? 'default' : 'outline'}
-                      className={`aspect-[3/4] text-lg font-bold transition-colors ${selectedVote === card ? 'bg-green-600 hover:bg-green-500 text-white border-transparent' : 'bg-white text-gray-900 border border-gray-300 hover:border-green-400 hover:bg-gray-50'}`}
+                      variant="outline"
+                      className={`aspect-[3/4] text-lg font-bold rounded-lg transition-all ${selectedVote === card ? 'bg-blue-600 hover:bg-blue-500 text-white border-transparent ring-2 ring-blue-300 shadow-md' : 'bg-white border border-gray-200 shadow-sm hover:bg-gray-50 hover:shadow-md'}`}
                       onClick={() => handleVote(card)}
                       disabled={roomState.votesRevealed}
                     >
@@ -339,16 +338,16 @@ export default function PlanningPoker() {
 
       {/* Bottom sticky controls */}
       {participant.isHost && (
-        <div className="sticky bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur py-3">
+        <div className="sticky bottom-0 border-t bg-white/95 backdrop-blur-sm py-3">
           <div className="container mx-auto px-4">
             <div className="flex justify-center gap-3">
               {!roomState.votesRevealed && (
-                <Button onClick={handleRevealVotes} size="lg" className="bg-green-600 hover:bg-green-500 text-white">
+                <Button onClick={handleRevealVotes} size="lg" variant="default">
                   <Eye className="h-4 w-4 mr-2" />
                   Reveal Votes
                 </Button>
               )}
-              <Button onClick={handleResetVotes} size="lg" variant="outline" className="border-green-600 text-green-700 hover:bg-green-50">
+              <Button onClick={handleResetVotes} size="lg" variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reset Votes
               </Button>
