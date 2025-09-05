@@ -6,8 +6,8 @@
     { "src": "build/v4/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/", "dest": "build/v4" },
-    { "src": "/(.*)", "dest": "build/v4/$1" }
+    { "src": "/", "dest": "/build/v4" },
+    { "src": "/(.*)", "dest": "/build/v4/$1" }
   ]
 }
 
