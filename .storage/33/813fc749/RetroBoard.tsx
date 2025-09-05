@@ -36,9 +36,20 @@ export default function RetroBoard() {
       const currentParticipant = roomData.participants.find(p => p.name === participantName);
       if (currentParticipant) {
         setParticipant(currentParticipant);
+      } else {
+        // If participant not found and this is a host, they might be rejoining
+        // Find by isHost flag instead
+        const hostParticipant = roomData.participants.find(p => p.isHost);
+        if (hostParticipant && isHost) {
+          setParticipant(hostParticipant);
+        } else {
+          console.error('Participant not found in room:', { participantName, participants: roomData.participants });
+        }
       }
+    } else {
+      console.error('No room found in localStorage for roomId:', roomId);
     }
-  }, [participantName, roomId, navigate]);
+  }, [participantName, roomId, isHost, navigate]);
 
   const updateRoomState = (updater: (prev: RoomState) => RoomState) => {
     setRoomState(prev => {

@@ -102,7 +102,7 @@ export default function Index() {
               </p>
               <Button 
                 onClick={() => createRoom('planning-poker')} 
-                className="w-full"
+                className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors"
               >
                 Create Planning Poker Room
               </Button>
@@ -128,7 +128,7 @@ export default function Index() {
               </p>
               <Button 
                 onClick={() => createRoom('retro-board')} 
-                className="w-full"
+                className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors"
               >
                 Create Retro Board Room
               </Button>
@@ -157,7 +157,7 @@ export default function Index() {
                   className="text-center font-mono"
                 />
               </div>
-              <Button onClick={joinRoom} className="w-full" disabled={!roomCode.trim()}>
+              <Button onClick={joinRoom} className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors" disabled={!roomCode.trim()}>
                 Join Room
               </Button>
             </CardContent>

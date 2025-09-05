@@ -19,7 +19,7 @@ export default function RetroBoard() {
   const [newNoteContent, setNewNoteContent] = useState('');
   const [selectedColumn, setSelectedColumn] = useState('1');
 
-  const { roomState, participant, sendMessage, updateRoomState } = useRoom(roomId || '', participantName);
+  const { roomState, participant, sendMessage, updateRoomState, initializeRoom, joinRoom } = useRoom(roomId || '', participantName);
 
   useEffect(() => {
     if (!participantName) {
@@ -27,6 +27,33 @@ export default function RetroBoard() {
       return;
     }
   }, [participantName, navigate]);
+
+  useEffect(() => {
+    const initRoom = async () => {
+      if (!participantName || !roomId) return;
+
+      try {
+        // Check if room already exists in localStorage
+        const storedRoom = localStorage.getItem(`room-${roomId}`);
+        
+        if (storedRoom && isHost) {
+          // Host is returning to existing room - join it
+          await joinRoom();
+        } else if (isHost) {
+          // Host is creating a new room
+          await initializeRoom('retro-board');
+        } else {
+          // Regular participant joining existing room
+          await joinRoom();
+        }
+      } catch (error) {
+        console.error('Failed to initialize room:', error);
+        navigate('/');
+      }
+    };
+
+    initRoom();
+  }, [roomId, participantName, isHost, initializeRoom, joinRoom, navigate]);
 
   const handleAddNote = () => {
     if (!newNoteContent.trim() || !participant) return;
