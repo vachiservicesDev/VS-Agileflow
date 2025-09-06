@@ -14,7 +14,7 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-3">Contact</h3>
             <p className="text-sm leading-relaxed">
               <a href="tel:+16124238425" className="hover:underline">+1 (612) 423-8425</a><br />
-              <a href="mailto:ravipeddyreddy@gmail.com" className="hover:underline">ravipeddyreddy@gmail.com</a>
+              <a href="mailto:ravi@freeagilepoker.com" className="hover:underline">ravi@freeagilepoker.com</a>
             </p>
           </div>
           <div>
