@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Users, Eye, EyeOff, RefreshCw, Check, Clock } from 'lucide-react';
 import { RoomState, Participant } from '@/types/room';
 import { toast } from 'sonner';
+import { getSocket } from '@/lib/realtime';
 
 const FIBONACCI_CARDS = ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89', '?', '☕'];
 
@@ -25,38 +26,23 @@ export default function PlanningPoker() {
       navigate('/');
       return;
     }
-
-    // Load room state from localStorage
-    const storedRoom = localStorage.getItem(`room-${roomId}`);
-    if (storedRoom) {
-      const roomData: RoomState = JSON.parse(storedRoom);
-      setRoomState(roomData);
-      
-      // Find current participant
-      const currentParticipant = roomData.participants.find(p => p.name === participantName);
-      if (currentParticipant) {
-        setParticipant(currentParticipant);
+    const socket = getSocket();
+    const handler = (state: RoomState) => {
+      if (state.id === roomId) {
+        setRoomState(state);
+        const me = state.participants.find(p => p.name === participantName) || null;
+        setParticipant(me);
       }
-      
-      // Minimalist: no story context
-    }
+    };
+    socket.on('room_state', handler);
+    socket.emit('join_room', { roomId, name: participantName, type: 'planning-poker' });
+    return () => {
+      socket.off('room_state', handler);
+      socket.emit('leave_room', { roomId, name: participantName });
+    };
   }, [participantName, roomId, navigate]);
 
-  const updateRoomState = (updater: (prev: RoomState) => RoomState) => {
-    setRoomState(prev => {
-      if (!prev) return prev;
-      const updated = updater(prev);
-      localStorage.setItem(`room-${roomId}`, JSON.stringify(updated));
-      
-      // Dispatch storage event for real-time updates
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: `room-${roomId}`,
-        newValue: JSON.stringify(updated)
-      }));
-      
-      return updated;
-    });
-  };
+  // Realtime server is authoritative; local updates are done via socket emits
 
   // Listen for storage changes for real-time updates
   useEffect(() => {
@@ -77,17 +63,8 @@ export default function PlanningPoker() {
     setSelectedVote(value);
     setHasVoted(true);
     
-    updateRoomState(prev => ({
-      ...prev,
-      votes: {
-        ...prev.votes,
-        [participant.id]: {
-          participantId: participant.id,
-          value,
-          revealed: false
-        }
-      }
-    }));
+    const socket = getSocket();
+    socket.emit('cast_vote', { roomId, participantName: participant.name, value });
 
     toast.success('Vote cast!');
   };
@@ -95,10 +72,8 @@ export default function PlanningPoker() {
   const handleRevealVotes = () => {
     if (!participant?.isHost) return;
     
-    updateRoomState(prev => ({
-      ...prev,
-      votesRevealed: true
-    }));
+    const socket = getSocket();
+    socket.emit('reveal_votes', { roomId, requesterName: participant.name });
 
     toast.success('Votes revealed!');
   };
@@ -109,11 +84,8 @@ export default function PlanningPoker() {
     setSelectedVote(null);
     setHasVoted(false);
 
-    updateRoomState(prev => ({
-      ...prev,
-      votes: {},
-      votesRevealed: false
-    }));
+    const socket = getSocket();
+    socket.emit('reset_votes', { roomId, requesterName: participant.name });
 
     toast.success('Votes reset!');
   };

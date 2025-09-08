@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Users, Plus, X, MoreVertical, Printer, Image as ImageIcon, FileDown } from 'lucide-react';
-import { RoomState, Participant, StickyNote } from '@/types/room';
+import { RoomState, Participant } from '@/types/room';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
+import { getSocket } from '@/lib/realtime';
 
 export default function RetroBoard() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -28,30 +29,20 @@ export default function RetroBoard() {
       navigate('/');
       return;
     }
-
-    // Load room state from localStorage
-    const storedRoom = localStorage.getItem(`room-${roomId}`);
-    if (storedRoom) {
-      const roomData: RoomState = JSON.parse(storedRoom);
-      setRoomState(roomData);
-      
-      // Find current participant
-      const currentParticipant = roomData.participants.find(p => p.name === participantName);
-      if (currentParticipant) {
+    const socket = getSocket();
+    const handler = (state: RoomState) => {
+      if (state.id === roomId) {
+        setRoomState(state);
+        const currentParticipant = state.participants.find(p => p.name === participantName) || null;
         setParticipant(currentParticipant);
-      } else {
-        // If participant not found and this is a host, they might be rejoining
-        // Find by isHost flag instead
-        const hostParticipant = roomData.participants.find(p => p.isHost);
-        if (hostParticipant && isHost) {
-          setParticipant(hostParticipant);
-        } else {
-          console.error('Participant not found in room:', { participantName, participants: roomData.participants });
-        }
       }
-    } else {
-      console.error('No room found in localStorage for roomId:', roomId);
-    }
+    };
+    socket.on('room_state', handler);
+    socket.emit('join_room', { roomId, name: participantName, type: 'retro-board' });
+    return () => {
+      socket.off('room_state', handler);
+      socket.emit('leave_room', { roomId, name: participantName });
+    };
   }, [participantName, roomId, isHost, navigate]);
 
   // Close actions menu on outside click
@@ -65,21 +56,7 @@ export default function RetroBoard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const updateRoomState = (updater: (prev: RoomState) => RoomState) => {
-    setRoomState(prev => {
-      if (!prev) return prev;
-      const updated = updater(prev);
-      localStorage.setItem(`room-${roomId}`, JSON.stringify(updated));
-      
-      // Dispatch storage event for real-time updates
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: `room-${roomId}`,
-        newValue: JSON.stringify(updated)
-      }));
-      
-      return updated;
-    });
-  };
+  // Realtime server is authoritative; local updates are done via socket emits
 
   // Listen for storage changes for real-time updates
   useEffect(() => {
@@ -97,20 +74,9 @@ export default function RetroBoard() {
   const handleAddNote = () => {
     if (!newNoteText.trim() || !participant) return;
 
-    const newNote: StickyNote = {
-      id: crypto.randomUUID(),
-      content: newNoteText.trim(),
-      text: newNoteText.trim(),
-      columnId: selectedColumn,
-      authorId: participant.id,
-      authorName: participant.name,
-      createdAt: new Date()
-    };
-
-    updateRoomState(prev => ({
-      ...prev,
-      notes: [...(prev.notes || []), newNote]
-    }));
+    const socket = getSocket();
+    // Server will generate IDs and authoritative state; optimistic updates optional
+    socket.emit('note_add', { roomId, text: newNoteText.trim(), columnId: selectedColumn, authorName: participant.name });
 
     setNewNoteText('');
     toast.success('Note added!');
@@ -119,12 +85,8 @@ export default function RetroBoard() {
   const handleDeleteNote = (noteId: string) => {
     if (!participant) return;
 
-    updateRoomState(prev => ({
-      ...prev,
-      notes: (prev.notes || []).filter(note => 
-        note.id !== noteId || note.authorId === participant.id
-      )
-    }));
+    const socket = getSocket();
+    socket.emit('note_delete', { roomId, noteId, requesterName: participant.name });
 
     toast.success('Note deleted!');
   };

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Users, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRoom } from '@/hooks/useRoom';
+import { getSocket } from '@/lib/realtime';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function JoinRoom() {
@@ -16,18 +17,14 @@ export default function JoinRoom() {
   const [roomExists, setRoomExists] = useState(false);
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const navigate = useNavigate();
-  const { joinRoom, checkRoomExists, getRoomInfo } = useRoom(roomId || '', participantName);
+  const { checkRoomExists, getRoomInfo } = useRoom(roomId || '', participantName);
 
   useEffect(() => {
     if (roomId) {
-      const exists = checkRoomExists();
-      setRoomExists(exists);
-      if (exists) {
-        const info = getRoomInfo();
-        setRoomInfo(info);
-      }
+      // Assume room exists; server will validate on join
+      setRoomExists(true);
     }
-  }, [roomId, checkRoomExists, getRoomInfo]);
+  }, [roomId]);
 
   const handleJoinRoom = async () => {
     if (!participantName.trim()) {
@@ -48,13 +45,23 @@ export default function JoinRoom() {
     setIsJoining(true);
     
     try {
-      const roomState = await joinRoom();
+      const socket = getSocket();
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('join timeout')), 5000);
+        const handler = (state: any) => {
+          if (state?.id === roomId) {
+            clearTimeout(timer);
+            socket.off('room_state', handler);
+            resolve();
+          }
+        };
+        socket.on('room_state', handler);
+        socket.emit('join_room', { roomId, name: participantName.trim(), type: 'planning-poker' });
+      });
       toast.success('Successfully joined the room!');
       
       // Navigate to the appropriate room type
-      navigate(`/room/${roomState.type}/${roomId}`, { 
-        state: { participantName: participantName.trim(), isHost: false } 
-      });
+      navigate(`/room/${roomInfo?.type || 'planning-poker'}/${roomId}`, { state: { participantName: participantName.trim(), isHost: false } });
     } catch (error) {
       console.error('Failed to join room:', error);
       toast.error('Room not found or no longer available');
