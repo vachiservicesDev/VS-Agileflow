@@ -19,14 +19,46 @@ export default function JoinRoom() {
   const { joinRoom, checkRoomExists, getRoomInfo } = useRoom(roomId || '', participantName);
 
   useEffect(() => {
-    if (roomId) {
-      const exists = checkRoomExists();
-      setRoomExists(exists);
-      if (exists) {
+    if (!roomId) return;
+
+    // Initial check
+    const exists = checkRoomExists();
+    setRoomExists(exists);
+    if (exists) {
+      const info = getRoomInfo();
+      setRoomInfo(info);
+    }
+
+    // Listen for storage changes so the page updates the moment the host creates the room
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === `room-${roomId}`) {
+        const nowExists = !!e.newValue;
+        setRoomExists(nowExists);
+        if (nowExists && e.newValue) {
+          try {
+            setRoomInfo(JSON.parse(e.newValue));
+          } catch {
+            // ignore parse errors
+          }
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // Lightweight polling as a backstop for cross-origin/incognito cases where storage events may not fire
+    const interval = window.setInterval(() => {
+      const p = checkRoomExists();
+      setRoomExists(p);
+      if (p) {
         const info = getRoomInfo();
         setRoomInfo(info);
       }
-    }
+    }, 300);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.clearInterval(interval);
+    };
   }, [roomId, checkRoomExists, getRoomInfo]);
 
   const handleJoinRoom = async () => {
@@ -40,10 +72,7 @@ export default function JoinRoom() {
       return;
     }
 
-    if (!roomExists) {
-      toast.error('Room not found. Please check the room code.');
-      return;
-    }
+    // Do not block here; joinRoom has its own retry/backoff to handle creation races
 
     setIsJoining(true);
     
@@ -57,16 +86,9 @@ export default function JoinRoom() {
       });
     } catch (error) {
       console.error('Failed to join room:', error);
-      toast.error('Room not found or no longer available');
+      toast.error('Room not found or not ready yet. Please try again.');
       setIsJoining(false);
-      
-      // Refresh room existence check
-      const exists = checkRoomExists();
-      setRoomExists(exists);
-      if (exists) {
-        const info = getRoomInfo();
-        setRoomInfo(info);
-      }
+      // State will continue to refresh via storage listener/polling
     }
   };
 
@@ -109,7 +131,7 @@ export default function JoinRoom() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Room not found. Please check the room code or ask the host to share the correct link.
+                  Waiting for the host to finish creating the room… If you just received the link, try joining now; we will retry automatically if it is not ready yet.
                 </AlertDescription>
               </Alert>
             )}
@@ -123,14 +145,14 @@ export default function JoinRoom() {
                 value={participantName}
                 onChange={(e) => setParticipantName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleJoinRoom()}
-                disabled={!roomExists}
+                disabled={isJoining}
                 className="mt-1"
               />
             </div>
 
             <Button 
               onClick={handleJoinRoom} 
-              disabled={!participantName.trim() || isJoining || !roomExists}
+              disabled={!participantName.trim() || isJoining}
               className="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 active:scale-95 text-white transition-all duration-150 shadow-md hover:shadow-lg"
             >
               {isJoining ? 'Joining Room...' : 'Join Room'}

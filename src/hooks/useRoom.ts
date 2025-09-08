@@ -59,6 +59,21 @@ export const useRoom = (roomId: string, participantName: string) => {
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
+  // Persist participantId per room/name within this browser session to avoid duplicates on retries
+  const getOrCreateParticipantId = useCallback((): string => {
+    const key = `room-${roomId}-participant-${participantName}`;
+    try {
+      const existing = sessionStorage.getItem(key);
+      if (existing) return existing;
+      const generated = crypto.randomUUID();
+      sessionStorage.setItem(key, generated);
+      return generated;
+    } catch {
+      // Fallback if sessionStorage is unavailable
+      return crypto.randomUUID();
+    }
+  }, [roomId, participantName]);
+
   const initializeRoom = useCallback(async (type: 'planning-poker' | 'retro-board') => {
     return withLock(`room-${roomId}`, async () => {
       const participantId = crypto.randomUUID();
@@ -96,46 +111,69 @@ export const useRoom = (roomId: string, participantName: string) => {
   }, [roomId, participantName]);
 
   const joinRoom = useCallback(async () => {
+    const stableParticipantId = getOrCreateParticipantId();
+
     return withRetry(async () => {
       return withLock(`room-${roomId}`, async () => {
         const storedRoom = localStorage.getItem(`room-${roomId}`);
         if (!storedRoom) {
+          // Trigger retry path until host finishes creating the room
           throw new Error('Room not found');
         }
 
-        const roomData: RoomState = JSON.parse(storedRoom);
-        
-        // Check if participant with this name already exists
-        const existingParticipant = roomData.participants.find(p => p.name === participantName);
-        if (existingParticipant && !existingParticipant.isHost) {
-          // If participant already exists, just return the room state
-          setRoomState(roomData);
-          setParticipant(existingParticipant);
+        // Always work off the latest room snapshot
+        const latestRoom: RoomState = JSON.parse(storedRoom);
+
+        // If participant with this name already exists, attach and return
+        const byName = latestRoom.participants.find(p => p.name === participantName);
+        if (byName && !byName.isHost) {
+          setRoomState(latestRoom);
+          setParticipant(byName);
           setIsConnected(true);
-          return roomData;
+          return latestRoom;
         }
-        
-        const participantId = crypto.randomUUID();
+
         const newParticipant: Participant = {
-          id: participantId,
+          id: byName?.id || stableParticipantId,
           name: participantName,
           isHost: false
         };
 
-        const updatedRoom = {
-          ...roomData,
-          participants: [...roomData.participants, newParticipant]
+        // Merge participant ensuring id/name uniqueness (id takes precedence)
+        const hasIdAlready = latestRoom.participants.some(p => p.id === newParticipant.id);
+        const hasNameAlready = latestRoom.participants.some(p => p.name === newParticipant.name && !p.isHost);
+        const participantsMerged: Participant[] = hasIdAlready || hasNameAlready
+          ? latestRoom.participants
+          : [...latestRoom.participants, newParticipant];
+
+        const updatedRoom: RoomState = {
+          ...latestRoom,
+          participants: participantsMerged
         };
 
+        // Write and verify to mitigate concurrent write stomping
         localStorage.setItem(`room-${roomId}`, JSON.stringify(updatedRoom));
-        setRoomState(updatedRoom);
-        setParticipant(newParticipant);
-        setIsConnected(true);
 
-        return updatedRoom;
+        const verifyStored = localStorage.getItem(`room-${roomId}`);
+        if (verifyStored) {
+          const verified: RoomState = JSON.parse(verifyStored);
+          const present = verified.participants.some(p => p.id === newParticipant.id || p.name === newParticipant.name);
+          if (!present) {
+            // Another tab overwrote our write; request a retry
+            throw new Error('Join conflict, retrying');
+          }
+          setRoomState(verified);
+          const attached = verified.participants.find(p => p.id === newParticipant.id || p.name === newParticipant.name) || newParticipant;
+          setParticipant(attached);
+          setIsConnected(true);
+          return verified;
+        }
+
+        // Should not happen; ask for retry
+        throw new Error('Verification failed');
       });
-    });
-  }, [roomId, participantName]);
+    }, 6, 80);
+  }, [roomId, participantName, getOrCreateParticipantId]);
 
   const sendMessage = useCallback((type: string, payload: any) => {
     // Mock WebSocket message sending for demo purposes
