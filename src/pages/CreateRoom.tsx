@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Copy, Users, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { getSocket } from '@/lib/realtime';
 
 export default function CreateRoom() {
   const { type, roomId } = useParams<{ type: 'planning-poker' | 'retro-board'; roomId: string }>();
@@ -29,37 +30,9 @@ export default function CreateRoom() {
     setIsCreating(true);
     
     try {
-      // Create the room state directly here instead of using the hook
-      const participantId = crypto.randomUUID();
-      const newParticipant = {
-        id: participantId,
-        name: hostName.trim(),
-        isHost: true
-      };
-
-      const initialRoomState = {
-        id: roomId,
-        type,
-        participants: [newParticipant],
-        host: participantId,
-        createdAt: new Date(),
-        votes: {},
-        votesRevealed: false,
-        columns: type === 'retro-board' ? [
-          { id: '1', title: 'What Went Well', color: 'bg-green-100' },
-          { id: '2', title: 'What to Improve', color: 'bg-yellow-100' },
-          { id: '3', title: 'Action Items', color: 'bg-blue-100' }
-        ] : undefined,
-        notes: []
-      };
-
-      // Store room state in localStorage
-      localStorage.setItem(`room-${roomId}`, JSON.stringify(initialRoomState));
-      
-      // Navigate immediately to the room
-      navigate(`/room/${type}/${roomId}`, { 
-        state: { participantName: hostName.trim(), isHost: true } 
-      });
+      const socket = getSocket();
+      socket.emit('join_room', { roomId, name: hostName.trim(), type });
+      navigate(`/room/${type}/${roomId}`, { state: { participantName: hostName.trim(), isHost: true } });
     } catch (error) {
       console.error('Failed to create room:', error);
       toast.error('Failed to create room');
