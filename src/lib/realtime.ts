@@ -29,8 +29,8 @@ export function getSocket(): Socket {
   if (socket) return socket;
   const url = resolveSocketUrl();
   socket = io(url, {
-    // Allow fallback to polling in case websockets are blocked by proxies/CDN
-    transports: ['websocket', 'polling'],
+    // Prefer polling first; upgrade to websocket when available
+    transports: ['polling', 'websocket'],
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 500,
