@@ -54,9 +54,54 @@ export interface RoomState {
 
 export type WebSocketMessageType = 'join-room' | 'leave-room' | 'vote' | 'reveal-votes' | 'add-note' | 'update-note' | 'delete-note' | 'set-story' | 'new-round';
 
-export interface WebSocketMessage {
+/**
+ * Payload for joining a room
+ */
+export interface JoinRoomPayload {
+  roomId: string;
+  name: string;
+  type: 'planning-poker' | 'retro-board';
+}
+
+/**
+ * Payload for voting in planning poker
+ */
+export interface VotePayload {
+  value: string | null;
+}
+
+/**
+ * Payload for adding or updating a note in retro board
+ */
+export interface NotePayload {
+  id?: string;
+  content: string;
+  text: string;
+  columnId: string;
+  x?: number;
+  y?: number;
+}
+
+/**
+ * Payload for deleting a note
+ */
+export interface DeleteNotePayload {
+  id: string;
+}
+
+/**
+ * Payload for setting the current story in planning poker
+ */
+export interface SetStoryPayload {
+  story: string;
+}
+
+/**
+ * Base WebSocket message interface
+ */
+export interface WebSocketMessage<T = Record<string, unknown>> {
   type: WebSocketMessageType;
-  payload: Record<string, unknown>;
+  payload: T;
   roomId: string;
   participantId: string;
 }
