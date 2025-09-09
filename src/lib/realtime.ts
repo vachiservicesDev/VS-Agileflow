@@ -1,13 +1,35 @@
 import { io, Socket } from 'socket.io-client';
 
+/**
+ * Interface for import.meta environment variables
+ */
+interface LocalImportMetaEnv {
+  VITE_SOCKET_URL?: string;
+  VITE_BACKEND_URL?: string;
+}
+
+/**
+ * Interface for import.meta object
+ */
+interface LocalImportMeta {
+  env?: LocalImportMetaEnv;
+}
+
+/**
+ * Interface for window object with socket URL
+ */
+interface WindowWithSocketUrl extends Window {
+  __SOCKET_URL?: string;
+}
+
 let socket: Socket | null = null;
 
 function resolveSocketUrl(): string {
   const meta = document.querySelector('meta[name="socket-url"]') as HTMLMetaElement | null;
   const metaUrl = meta?.content;
-  const envUrl = (import.meta as any)?.env?.VITE_SOCKET_URL as string | undefined;
-  const backendEnv = (import.meta as any)?.env?.VITE_BACKEND_URL as string | undefined;
-  const winUrl = (window as any).__SOCKET_URL as string | undefined;
+  const envUrl = (import.meta as LocalImportMeta)?.env?.VITE_SOCKET_URL;
+  const backendEnv = (import.meta as LocalImportMeta)?.env?.VITE_BACKEND_URL;
+  const winUrl = (window as WindowWithSocketUrl).__SOCKET_URL;
   const hardFallback = 'https://vs-agileflow.onrender.com';
 
   // Prefer explicit envs/meta/window override
