@@ -75,8 +75,8 @@ export interface VotePayload {
  */
 export interface NotePayload {
   id?: string;
-  content: string;
-  text: string;
+  content?: string;
+  text?: string;
   columnId: string;
   x?: number;
   y?: number;

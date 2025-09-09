@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 /**
  * Interface for import.meta environment variables
  */
-interface ImportMetaEnv {
+interface LocalImportMetaEnv {
   VITE_SOCKET_URL?: string;
   VITE_BACKEND_URL?: string;
 }
@@ -11,8 +11,8 @@ interface ImportMetaEnv {
 /**
  * Interface for import.meta object
  */
-interface ImportMeta {
-  env?: ImportMetaEnv;
+interface LocalImportMeta {
+  env?: LocalImportMetaEnv;
 }
 
 /**
@@ -27,8 +27,8 @@ let socket: Socket | null = null;
 function resolveSocketUrl(): string {
   const meta = document.querySelector('meta[name="socket-url"]') as HTMLMetaElement | null;
   const metaUrl = meta?.content;
-  const envUrl = (import.meta as ImportMeta)?.env?.VITE_SOCKET_URL;
-  const backendEnv = (import.meta as ImportMeta)?.env?.VITE_BACKEND_URL;
+  const envUrl = (import.meta as LocalImportMeta)?.env?.VITE_SOCKET_URL;
+  const backendEnv = (import.meta as LocalImportMeta)?.env?.VITE_BACKEND_URL;
   const winUrl = (window as WindowWithSocketUrl).__SOCKET_URL;
   const hardFallback = 'https://vs-agileflow.onrender.com';
 
