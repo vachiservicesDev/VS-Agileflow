@@ -72,6 +72,10 @@ export interface VotePayload {
 
 /**
  * Payload for adding or updating a note in retro board
+ *
+ * Fields:
+ * - text: canonical plain-string body of the note (preferred)
+ * - content: optional legacy/rich body; if both are provided, text takes precedence
  */
 export interface NotePayload {
   id?: string;

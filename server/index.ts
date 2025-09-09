@@ -142,7 +142,9 @@ io.on('connection', (socket) => {
     if (!room) return;
     const author = room.participants.find((p) => p.name === authorName);
     if (!author) return;
-    const note = { id: randomUUID(), text, content: text, authorId: author.id, authorName, columnId, createdAt: new Date().toISOString() };
+    // Normalize: prefer text; ensure plain-string body
+    const body = (text ?? '').toString();
+    const note = { id: randomUUID(), text: body, content: body, authorId: author.id, authorName, columnId, createdAt: new Date().toISOString() };
     room.notes = room.notes || [];
     room.notes.push(note);
     await setRoom(roomId, room);
