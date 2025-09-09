@@ -20,10 +20,33 @@ export default function JoinRoom() {
   const { checkRoomExists, getRoomInfo } = useRoom(roomId || '', participantName);
 
   useEffect(() => {
-    if (roomId) {
-      // Assume room exists; server will validate on join
-      setRoomExists(true);
-    }
+    let isMounted = true;
+    const fetchRoom = async () => {
+      if (!roomId) return;
+      try {
+        const meta = document.querySelector('meta[name="socket-url"]') as HTMLMetaElement | null;
+        const metaUrl = meta?.content;
+        const envUrl = (import.meta as any)?.env?.VITE_SOCKET_URL as string | undefined;
+        const winUrl = (window as any).__SOCKET_URL as string | undefined;
+        const apiBase = envUrl || winUrl || metaUrl || (window.location.hostname.endsWith('freeagilepoker.com') ? 'https://vs-agileflow.onrender.com' : window.location.origin);
+        const res = await fetch(`${apiBase}/rooms/${roomId}`, { credentials: 'omit' });
+        if (!isMounted) return;
+        if (res.ok) {
+          const data = await res.json();
+          setRoomInfo(data);
+          setRoomExists(true);
+        } else {
+          setRoomExists(false);
+          setRoomInfo(null);
+        }
+      } catch {
+        if (!isMounted) return;
+        setRoomExists(false);
+        setRoomInfo(null);
+      }
+    };
+    fetchRoom();
+    return () => { isMounted = false; };
   }, [roomId]);
 
   const handleJoinRoom = async () => {
@@ -56,7 +79,7 @@ export default function JoinRoom() {
           }
         };
         socket.on('room_state', handler);
-        socket.emit('join_room', { roomId, name: participantName.trim(), type: 'planning-poker' });
+        socket.emit('join_room', { roomId, name: participantName.trim(), type: (roomInfo?.type || 'planning-poker') });
       });
       toast.success('Successfully joined the room!');
       
