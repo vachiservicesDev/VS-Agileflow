@@ -35,6 +35,15 @@ export default function Index() {
             Create instant collaboration rooms for your team. No sign-ups, no data storage, 
             just pure real-time agile tools that disappear when you're done.
           </p>
+          <div className="max-w-4xl mx-auto text-left">
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-gray-700 leading-relaxed">
+                  FreeAgilePoker.com empowers scrum masters, agile coaches, and software development teams with a real-time collaboration platform designed for Planning Poker and Retrospectives. Launch sessions instantly—no sign-ups or downloads required—and invite participants with a single link. Our Privacy by Design approach ensures no data storage and no tracking; rooms are ephemeral, personal information isn’t collected, and your team’s insights remain yours. Facilitation features keep ceremonies efficient and inclusive, including customizable estimation decks, anonymous voting with simultaneous reveal, timers, and clean visual summaries that drive alignment. Retrospectives flow smoothly with modern templates, flexible formats, and frictionless participation from any device. Because nothing persists on our servers, FreeAgilePoker.com aligns with strict privacy requirements and reduces administrative overhead. Enjoy a modern, responsive interface that supports distributed teams and hybrid work. Elevate planning accuracy, shorten meetings, and foster continuous improvement with a secure, zero-hassle experience.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="p-4 bg-green-100 rounded-full w-fit mx-auto mb-4">
