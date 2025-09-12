@@ -28,9 +28,10 @@ function resolveSocketUrl(): string {
 export function getSocket(): Socket {
   if (socket) return socket;
   const url = resolveSocketUrl();
+  const isProdHost = window.location.hostname.endsWith('freeagilepoker.com');
   socket = io(url, {
-    // Prefer polling first; upgrade to websocket when available
-    transports: ['polling', 'websocket'],
+    // In production, force websocket to avoid CORS on XHR polling through proxies/CDNs
+    transports: isProdHost ? ['websocket'] : ['polling', 'websocket'],
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 500,

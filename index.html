@@ -11,16 +11,21 @@
     <meta name="description" content="Spin up ephemeral rooms for agile ceremonies. No sign-ups, no data persistence—real-time sync. Data vanishes when the session ends." />
     <script>
       (function() {
-        var d = window.customElements && window.customElements.define;
-        if (d) {
-          var g = window.customElements.get.bind(window.customElements);
-          window.customElements.define = function(name, ctor, opts) {
-            if (!g(name)) {
-              return d.call(window.customElements, name, ctor, opts);
+        var defineFn = window.customElements && window.customElements.define;
+        if (!defineFn) return;
+        var getFn = window.customElements.get.bind(window.customElements);
+        window.customElements.define = function(name, ctor, opts) {
+          try {
+            if (!getFn(name)) {
+              return defineFn.call(window.customElements, name, ctor, opts);
             }
-            console.warn("Custom element '" + name + "' already defined, skipping");
-          };
-        }
+          } catch (e) {
+            if (!(e && (e.name === 'NotSupportedError' || /already been defined/i.test(String(e.message))))) {
+              throw e;
+            }
+          }
+          try { console.warn("Custom element '" + name + "' already defined, skipping"); } catch (_) {}
+        };
       })();
     </script>
   </head>
