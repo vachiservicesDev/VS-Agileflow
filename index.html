@@ -11,21 +11,59 @@
     <meta name="description" content="Spin up ephemeral rooms for agile ceremonies. No sign-ups, no data persistence—real-time sync. Data vanishes when the session ends." />
     <script>
       (function() {
-        var defineFn = window.customElements && window.customElements.define;
-        if (!defineFn) return;
-        var getFn = window.customElements.get.bind(window.customElements);
-        window.customElements.define = function(name, ctor, opts) {
+        function wrapRegistryDefine(registry) {
+          if (!registry || registry.__defineGuardInstalled) return;
+          var original = registry.define;
           try {
-            if (!getFn(name)) {
-              return defineFn.call(window.customElements, name, ctor, opts);
-            }
-          } catch (e) {
-            if (!(e && (e.name === 'NotSupportedError' || /already been defined/i.test(String(e.message))))) {
-              throw e;
-            }
+            registry.define = function(name, ctor, opts) {
+              try {
+                if (!this.get(name)) {
+                  return original.call(this, name, ctor, opts);
+                }
+              } catch (e) {
+                if (!(e && (e.name === 'NotSupportedError' || /already been defined/i.test(String(e.message))))) {
+                  throw e;
+                }
+              }
+              try { console.warn("Custom element '" + name + "' already defined, skipping"); } catch (_) {}
+            };
+            registry.__defineGuardInstalled = true;
+          } catch (_) {}
+        }
+
+        // Guard current registry
+        if (window.customElements) {
+          wrapRegistryDefine(window.customElements);
+        }
+
+        // Also guard the prototype so later polyfills can't bypass
+        try {
+          var proto = Object.getPrototypeOf(window.customElements);
+          if (proto && !proto.__defineGuardInstalled && typeof proto.define === 'function') {
+            var originalProtoDefine = proto.define;
+            proto.define = function(name, ctor, opts) {
+              try {
+                if (!this.get(name)) {
+                  return originalProtoDefine.call(this, name, ctor, opts);
+                }
+              } catch (e) {
+                if (!(e && (e.name === 'NotSupportedError' || /already been defined/i.test(String(e.message))))) {
+                  throw e;
+                }
+              }
+              try { console.warn("Custom element '" + name + "' already defined, skipping"); } catch (_) {}
+            };
+            proto.__defineGuardInstalled = true;
           }
-          try { console.warn("Custom element '" + name + "' already defined, skipping"); } catch (_) {}
-        };
+        } catch (_) {}
+
+        // Periodically re-apply for a short time in case late polyfills replace it
+        var attempts = 0;
+        var timer = setInterval(function() {
+          attempts++;
+          if (window.customElements) wrapRegistryDefine(window.customElements);
+          if (attempts > 50) clearInterval(timer); // ~5s
+        }, 100);
       })();
     </script>
   </head>
