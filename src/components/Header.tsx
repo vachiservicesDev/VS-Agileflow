@@ -14,11 +14,7 @@ export default function Header() {
               decoding="async"
             />
           </Link>
-          <nav className="flex items-center gap-4">
-            <Link to="/join-room" className="text-sm font-medium text-gray-700 hover:text-gray-900">
-              Join Room
-            </Link>
-          </nav>
+          <div />
         </div>
       </div>
     </header>
