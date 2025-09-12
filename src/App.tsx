@@ -15,6 +15,7 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/join-room" element={<JoinRoom />} />
           <Route path="/create-room/:type/:roomId" element={<CreateRoom />} />
           <Route path="/join-room/:roomId" element={<JoinRoom />} />
           <Route path="/room/retro-board/:roomId" element={<RetroBoard />} />

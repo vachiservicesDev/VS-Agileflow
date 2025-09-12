@@ -45,6 +45,20 @@
   }
 }
 
+/* Ensure floating widgets are visible on common screens */
+.floating-widget,
+[data-widget="feedback"],
+.feedback-widget,
+.intercom-lightweight-app,
+.hotjar-widget,
+.canny-embed {
+  inset: auto 12px 12px auto !important;
+  right: 12px !important;
+  bottom: 12px !important;
+  max-width: min(360px, 90vw) !important;
+  max-height: min(70vh, 800px) !important;
+}
+
 /* Print styles */
 @media print {
   @page {
