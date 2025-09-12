@@ -29,33 +29,41 @@ export default function Index() {
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            Real-Time Agile Collaboration
+            Run Better Agile Meetings, Instantly.
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Create instant collaboration rooms for your team. No sign-ups, no data storage, 
-            just pure real-time agile tools that disappear when you're done.
+            Create a free, private room in seconds. No sign-ups. No tracking. Ever.
           </p>
+          <div className="max-w-4xl mx-auto text-left">
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-gray-700 leading-relaxed">
+                  FreeAgilePoker.com empowers scrum masters, agile coaches, and software development teams with a real-time collaboration platform designed for Planning Poker and Retrospectives. Launch sessions instantly—no sign-ups or downloads required—and invite participants with a single link. Our Privacy by Design approach ensures no data storage and no tracking; rooms are ephemeral, personal information isn’t collected, and your team’s insights remain yours. Facilitation features keep ceremonies efficient and inclusive, including customizable estimation decks, anonymous voting with simultaneous reveal, timers, and clean visual summaries that drive alignment. Retrospectives flow smoothly with modern templates, flexible formats, and frictionless participation from any device. Because nothing persists on our servers, FreeAgilePoker.com aligns with strict privacy requirements and reduces administrative overhead. Enjoy a modern, responsive interface that supports distributed teams and hybrid work. Elevate planning accuracy, shorten meetings, and foster continuous improvement with a secure, zero-hassle experience.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="p-4 bg-green-100 rounded-full w-fit mx-auto mb-4">
                 <Shield className="h-8 w-8 text-green-600" />
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Privacy by Design</h4>
-              <p className="text-gray-600">No data storage, no tracking. Your session data disappears when you close the room.</p>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Your Data is Sacred</h4>
+              <p className="text-gray-600">Sessions are ephemeral. Nothing is stored, so your conversations remain confidential.</p>
             </div>
             <div className="text-center">
               <div className="p-4 bg-blue-100 rounded-full w-fit mx-auto mb-4">
                 <Zap className="h-8 w-8 text-blue-600" />
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Instant Setup</h4>
-              <p className="text-gray-600">Create rooms in seconds. No accounts, no setup time, just click and collaborate.</p>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Launch in Seconds</h4>
+              <p className="text-gray-600">No accounts, no setup. Just share a link and start collaborating.</p>
             </div>
             <div className="text-center">
               <div className="p-4 bg-purple-100 rounded-full w-fit mx-auto mb-4">
                 <Users className="h-8 w-8 text-purple-600" />
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Real-time Sync</h4>
-              <p className="text-gray-600">See changes instantly. Every vote, note, and action syncs across all participants.</p>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Perfectly in Sync</h4>
+              <p className="text-gray-600">Every vote, note, and action appears instantly for all participants.</p>
             </div>
           </div>
         </div>
@@ -76,8 +84,8 @@ export default function Index() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Estimate user stories collaboratively with Fibonacci sequence cards. 
-                Vote privately and reveal simultaneously for unbiased estimation.
+                Estimate stories together with private voting and simultaneous reveal. 
+                Drive alignment faster using familiar Fibonacci cards.
               </p>
               <Button 
                 onClick={() => createRoom('planning-poker')} 
@@ -102,8 +110,8 @@ export default function Index() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Conduct sprint retrospectives with virtual sticky notes. 
-                Add insights, group ideas, and create action items together.
+                Run clean, focused retros with virtual sticky notes. 
+                Capture insights, group themes, and turn takeaways into action.
               </p>
               <Button 
                 onClick={() => createRoom('retro-board')} 
@@ -121,7 +129,7 @@ export default function Index() {
             <CardHeader className="text-center">
               <CardTitle>Join Existing Room</CardTitle>
               <CardDescription>
-                Have a room code? Enter it below to join the session
+                Have a room code? Enter it below to join the session.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

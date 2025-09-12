@@ -11,25 +11,27 @@ import { getSocket } from '@/lib/realtime';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function JoinRoom() {
-  const { roomId } = useParams<{ roomId: string }>();
+  const { roomId } = useParams<{ roomId?: string }>();
   const [participantName, setParticipantName] = useState('');
+  const [manualRoomCode, setManualRoomCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [roomExists, setRoomExists] = useState(false);
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const navigate = useNavigate();
-  const { checkRoomExists, getRoomInfo } = useRoom(roomId || '', participantName);
+  const effectiveRoomId = roomId || '';
+  const { checkRoomExists, getRoomInfo } = useRoom(effectiveRoomId, participantName);
 
   useEffect(() => {
     let isMounted = true;
     const fetchRoom = async () => {
-      if (!roomId) return;
+      if (!effectiveRoomId) return;
       try {
         const meta = document.querySelector('meta[name="socket-url"]') as HTMLMetaElement | null;
         const metaUrl = meta?.content;
         const envUrl = (import.meta as any)?.env?.VITE_SOCKET_URL as string | undefined;
         const winUrl = (window as any).__SOCKET_URL as string | undefined;
         const apiBase = envUrl || winUrl || metaUrl || (window.location.hostname.endsWith('freeagilepoker.com') ? 'https://vs-agileflow.onrender.com' : window.location.origin);
-        const res = await fetch(`${apiBase}/rooms/${roomId}`, { credentials: 'omit' });
+        const res = await fetch(`${apiBase}/rooms/${effectiveRoomId}`, { credentials: 'omit' });
         if (!isMounted) return;
         if (res.ok) {
           const data = await res.json();
@@ -47,7 +49,7 @@ export default function JoinRoom() {
     };
     fetchRoom();
     return () => { isMounted = false; };
-  }, [roomId]);
+  }, [effectiveRoomId]);
 
   const handleJoinRoom = async () => {
     if (!participantName.trim()) {
@@ -55,7 +57,7 @@ export default function JoinRoom() {
       return;
     }
 
-    if (!roomId) {
+    if (!effectiveRoomId) {
       toast.error('Invalid room ID');
       return;
     }
@@ -79,12 +81,12 @@ export default function JoinRoom() {
           }
         };
         socket.on('room_state', handler);
-        socket.emit('join_room', { roomId, name: participantName.trim(), type: (roomInfo?.type || 'planning-poker') });
+        socket.emit('join_room', { roomId: effectiveRoomId, name: participantName.trim(), type: (roomInfo?.type || 'planning-poker') });
       });
       toast.success('Successfully joined the room!');
       
       // Navigate to the appropriate room type
-      navigate(`/room/${roomInfo?.type || 'planning-poker'}/${roomId}`, { state: { participantName: participantName.trim(), isHost: false } });
+      navigate(`/room/${roomInfo?.type || 'planning-poker'}/${effectiveRoomId}`, { state: { participantName: participantName.trim(), isHost: false } });
     } catch (error) {
       console.error('Failed to join room:', error);
       toast.error('Room not found or no longer available');
@@ -98,6 +100,12 @@ export default function JoinRoom() {
         setRoomInfo(info);
       }
     }
+  };
+
+  const handleNavigateToRoomCode = () => {
+    const code = manualRoomCode.trim().toUpperCase();
+    if (!code) return;
+    navigate(`/join-room/${code}`);
   };
 
   return (
@@ -115,13 +123,32 @@ export default function JoinRoom() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Join Room</CardTitle>
-            <CardDescription>
-              Enter your name to join room: <code className="bg-gray-100 px-2 py-1 rounded">{roomId}</code>
-            </CardDescription>
+            {effectiveRoomId ? (
+              <CardDescription>
+                Enter your name to join room: <code className="bg-gray-100 px-2 py-1 rounded">{effectiveRoomId}</code>
+              </CardDescription>
+            ) : (
+              <CardDescription>
+                Enter a room code to join an existing session
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
+            {!effectiveRoomId && (
+              <div>
+                <Label htmlFor="manualRoomCode">Room Code</Label>
+                <Input
+                  id="manualRoomCode"
+                  placeholder="Enter room code (e.g., ABC12345)"
+                  value={manualRoomCode}
+                  onChange={(e) => setManualRoomCode(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleNavigateToRoomCode()}
+                  className="mt-1 text-center font-mono"
+                />
+              </div>
+            )}
             {/* Room Status */}
-            {roomExists ? (
+            {effectiveRoomId && roomExists ? (
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="flex items-start space-x-2">
                   <Users className="h-5 w-5 text-green-600 mt-0.5" />
@@ -135,14 +162,14 @@ export default function JoinRoom() {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : effectiveRoomId ? (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   Room not found. Please check the room code or ask the host to share the correct link.
                 </AlertDescription>
               </Alert>
-            )}
+            ) : null}
 
             {/* Participant Name Input */}
             <div>
@@ -153,21 +180,21 @@ export default function JoinRoom() {
                 value={participantName}
                 onChange={(e) => setParticipantName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleJoinRoom()}
-                disabled={!roomExists}
+                disabled={effectiveRoomId ? !roomExists : false}
                 className="mt-1"
               />
             </div>
 
             <Button 
-              onClick={handleJoinRoom} 
-              disabled={!participantName.trim() || isJoining || !roomExists}
+              onClick={effectiveRoomId ? handleJoinRoom : handleNavigateToRoomCode} 
+              disabled={effectiveRoomId ? (!participantName.trim() || isJoining || !roomExists) : !manualRoomCode.trim()}
               className="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 active:scale-95 text-white transition-all duration-150 shadow-md hover:shadow-lg"
             >
-              {isJoining ? 'Joining Room...' : 'Join Room'}
+              {effectiveRoomId ? (isJoining ? 'Joining Room...' : 'Join Room') : 'Continue'}
             </Button>
 
             {/* Instructions */}
-            {roomExists && (
+            {effectiveRoomId && roomExists && (
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="flex items-start space-x-2">
                   <Users className="h-5 w-5 text-blue-600 mt-0.5" />

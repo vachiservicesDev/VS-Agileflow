@@ -14,6 +14,7 @@ export default function Header() {
               decoding="async"
             />
           </Link>
+          <div />
         </div>
       </div>
     </header>
