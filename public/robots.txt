@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Disallow dynamic room URLs from being indexed
+Disallow: /room/
+Disallow: /create-room/
+Disallow: /join-room/
+
+Sitemap: https://freeagilepoker.com/sitemap.xml
+
