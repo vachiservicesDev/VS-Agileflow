@@ -143,6 +143,27 @@ export default function Index() {
           </Card>
         </div>
       </section>
+      {/* Testimonials */}
+      <section className="container mx-auto px-4 pb-16">
+        <div className="text-center mb-10">
+          <h3 className="text-2xl font-bold text-gray-900">What teams are saying</h3>
+          <p className="text-gray-600">Lightweight, fast, and easy to trust</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="p-6 rounded-lg border bg-white shadow-sm">
+            <p className="text-gray-700 italic">“Setup took seconds and estimates were done in minutes. Perfect for quick planning.”</p>
+            <div className="mt-4 text-sm text-gray-500">— Engineering Manager</div>
+          </div>
+          <div className="p-6 rounded-lg border bg-white shadow-sm">
+            <p className="text-gray-700 italic">“No accounts, no friction. The privacy-first approach is exactly what we needed.”</p>
+            <div className="mt-4 text-sm text-gray-500">— Product Owner</div>
+          </div>
+          <div className="p-6 rounded-lg border bg-white shadow-sm">
+            <p className="text-gray-700 italic">“Retro notes and planning poker in one place, synced perfectly.”</p>
+            <div className="mt-4 text-sm text-gray-500">— Scrum Master</div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

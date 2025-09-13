@@ -7,6 +7,9 @@ import CreateRoom from './pages/CreateRoom'
 import JoinRoom from './pages/JoinRoom'
 import RetroBoard from './pages/RetroBoard'
 import PlanningPoker from './pages/PlanningPoker'
+import About from './pages/About'
+import Guides from './pages/Guides'
+import GuidePost from './pages/GuidePost'
 
 function App() {
   return (
@@ -15,6 +18,9 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/guides" element={<Guides />} />
+          <Route path="/guides/:slug" element={<GuidePost />} />
           <Route path="/create-room/:type/:roomId" element={<CreateRoom />} />
           <Route path="/join-room/:roomId" element={<JoinRoom />} />
           <Route path="/room/retro-board/:roomId" element={<RetroBoard />} />
