@@ -2,12 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { 
   RoomState, 
   Participant, 
-  WebSocketMessageType,
-  JoinRoomPayload,
-  VotePayload,
-  NotePayload,
-  DeleteNotePayload,
-  SetStoryPayload
+  WebSocketMessage
 } from '@/types/room';
 import { getSocket } from '@/lib/realtime';
 
@@ -53,11 +48,10 @@ export const useRoom = (roomId: string, participantName: string) => {
   }, [roomId, participantName]);
 
   const sendMessage = useCallback((
-    type: WebSocketMessageType, 
-    payload: JoinRoomPayload | VotePayload | NotePayload | DeleteNotePayload | SetStoryPayload | Record<string, unknown>
+    message: WebSocketMessage
   ) => {
     // Mock WebSocket message sending for demo purposes
-    console.log('Mock send message:', type, payload);
+    console.log('Mock send message:', message.type, message.payload);
   }, []);
 
   const updateRoomState = useCallback((updater: (prev: RoomState) => RoomState) => {
